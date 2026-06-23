@@ -5,13 +5,14 @@ import {
 } from "convex/server";
 import { v } from "convex/values";
 
-import { ensureUser, requireExistingUser } from "./lib/auth";
+import { ensureUser, getUserByIdentity } from "./lib/auth";
 
 export const listRepositories = query({
   args: {},
   returns: v.any(),
   handler: async (ctx) => {
-    const user = await requireExistingUser(ctx);
+    const user = await getUserByIdentity(ctx);
+    if (!user || user.deletedAt) return [];
     const repos = await ctx.db
       .query("repositories")
       .withIndex("by_user_fullName", (q) => q.eq("userId", user._id))

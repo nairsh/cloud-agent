@@ -1,7 +1,7 @@
 import { mutationGeneric as mutation, queryGeneric as query } from "convex/server";
 import { v } from "convex/values";
 
-import { assertOwns, ensureUser, requireExistingUser } from "./lib/auth";
+import { assertOwns, ensureUser, getUserByIdentity, requireExistingUser } from "./lib/auth";
 
 function titleFromPrompt(prompt: string) {
   const compact = prompt.replace(/\s+/g, " ").trim();
@@ -41,7 +41,8 @@ export const list = query({
   args: {},
   returns: v.any(),
   handler: async (ctx) => {
-    const user = await requireExistingUser(ctx);
+    const user = await getUserByIdentity(ctx);
+    if (!user || user.deletedAt) return [];
     const sessions = await ctx.db
       .query("agentSessions")
       .withIndex("by_user_updated", (q) => q.eq("userId", user._id))
@@ -57,7 +58,10 @@ export const getTimeline = query({
   args: { sessionId: v.string() },
   returns: v.any(),
   handler: async (ctx, args) => {
-    const user = await requireExistingUser(ctx);
+    const user = await getUserByIdentity(ctx);
+    if (!user || user.deletedAt) {
+      return { session: null, events: [], toolCalls: [] };
+    }
     const session = await ctx.db.get(args.sessionId as any);
     if (!session || session.userId !== user._id) {
       return { session: null, events: [], toolCalls: [] };

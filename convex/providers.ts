@@ -1,13 +1,14 @@
 import { mutationGeneric as mutation, queryGeneric as query } from "convex/server";
 import { v } from "convex/values";
 
-import { ensureUser, requireExistingUser } from "./lib/auth";
+import { ensureUser, getUserByIdentity } from "./lib/auth";
 
 export const listModels = query({
   args: {},
   returns: v.any(),
   handler: async (ctx) => {
-    const user = await requireExistingUser(ctx);
+    const user = await getUserByIdentity(ctx);
+    if (!user || user.deletedAt) return [];
     const credentials = await ctx.db
       .query("providerCredentials")
       .withIndex("by_user_provider", (q) => q.eq("userId", user._id))
