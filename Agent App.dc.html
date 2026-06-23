@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:#ffffff;}
+#dcroot{
+  --bg:#ffffff;--sidebar:#f7f7f5;--border:#ececea;--text:#1d1d1f;--text2:#3a3a3c;
+  --muted:#8a8a8e;--muted2:#86868b;--muted3:#9a9a97;--label:#a6a6a1;--sub:#a8a8a4;
+  --hover:#eeeeea;--active:#e9e9e4;--card:#f4f4f2;--cardbd:#e8e8e5;--dot:#c7c7c2;
+  --icon:#56565a;--icon2:#6e6e72;--cloud:#b5b5b0;--pillbg:#e7eefc;--pilltx:#2f6bed;
+  --inputbg:#ffffff;--inputbd:#e3e3df;--plusbd:#dcdcd7;--shine:#c0c0bd;--shinehi:#1d1d1f;
+  --thumbbd:#dededa;--thumb1:#e9e9e5;--thumb2:#efefec;--tag:#2a2a2c;--tagtx:#f0f0f0;
+  --btnbg:#1d1d1f;--btnfg:#ffffff;--linehi:#a8a8ac;--scrollthumb:#d9d9d4;
+}
+#dcroot[data-theme="dark"]{
+  --bg:#161618;--sidebar:#0f0f11;--border:#2a2a2d;--text:#ededed;--text2:#cfcfd2;
+  --muted:#9a9a9e;--muted2:#8a8a8e;--muted3:#86868b;--label:#6c6c70;--sub:#6c6c70;
+  --hover:#242427;--active:#2c2c30;--card:#202023;--cardbd:#34343a;--dot:#4d4d52;
+  --icon:#b8b8be;--icon2:#a2a2a8;--cloud:#5c5c62;--pillbg:#1e2b48;--pilltx:#7aa6ff;
+  --inputbg:#202023;--inputbd:#33333a;--plusbd:#3a3a40;--shine:#48484e;--shinehi:#f0f0f0;
+  --thumbbd:#3a3a40;--thumb1:#2a2a2d;--thumb2:#323237;--tag:#000000;--tagtx:#e8e8e8;
+  --btnbg:#ededed;--btnfg:#161618;--linehi:#67676c;--scrollthumb:#3a3a40;
+}
+.scrl::-webkit-scrollbar{width:11px;}
+.scrl::-webkit-scrollbar-thumb{background:var(--scrollthumb);border-radius:8px;border:3px solid transparent;background-clip:padding-box;}
+.scrl::-webkit-scrollbar-track{background:transparent;}
+@keyframes dcpulse{0%,80%,100%{opacity:.22;transform:scale(.6);}40%{opacity:1;transform:scale(1);}}
+@keyframes dcshine{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</helmet>
+
+<div id="dcroot" data-theme="{{ themeAttr }}" style="height:100vh;width:100%;display:flex;flex-direction:column;background:var(--bg);font-family:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;">
+
+  <!-- ===== TITLE BAR ===== -->
+  <div style="display:flex;height:52px;flex:none;">
+    <div style="width:332px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--sidebar);border-right:1px solid var(--border);">
+      <div style="display:flex;gap:14px;align-items:center;color:var(--muted2);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;padding:0 22px;background:var(--bg);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:16.5px;font-weight:500;color:var(--text);">Vibe academy SVG logo update</span>
+      </div>
+      <div style="margin-left:auto;color:var(--muted3);display:flex;align-items:center;cursor:pointer;" style-hover="color:var(--text);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BODY ROW ===== -->
+  <div style="flex:1;display:flex;min-height:0;">
+
+    <!-- ===== SIDEBAR ===== -->
+    <div style="width:332px;flex:none;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;">
+      <div class="scrl" style="flex:1;overflow-y:auto;padding:6px 10px 12px;">
+
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;cursor:pointer;color:var(--text);" style-hover="background:var(--hover);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--icon)" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M21 4 L3 11 L10 13.5 L12.5 20 Z"/><path d="M21 4 L10 13.5"/></svg>
+          <span style="font-size:15px;font-weight:500;flex:1;">New Agent</span>
+          <span style="font-size:13.5px;color:var(--sub);letter-spacing:.5px;">&#8984;N</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;cursor:pointer;color:var(--text);" style-hover="background:var(--hover);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--icon)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7 a2 2 0 0 1 2 -2 H9 l2 2 H19 a2 2 0 0 1 2 2 V17 a2 2 0 0 1 -2 2 H5 a2 2 0 0 1 -2 -2 Z"/><line x1="12" y1="10.5" x2="12" y2="16.5"/><line x1="9" y1="13.5" x2="15" y2="13.5"/></svg>
+          <span style="font-size:15px;font-weight:500;flex:1;">Add project</span>
+        </div>
+
+        <div style="font-size:12.5px;font-weight:600;color:var(--label);padding:7px 10px 4px;margin-top:12px;">vibecademy</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--dot);flex:none;margin:0 3px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Implement login redirecti&#8230;</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--dot);flex:none;margin:0 3px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Run build and fix errors</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--muted3);" style-hover="background:var(--hover);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin:0 -2px;"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+          <span style="font-size:14.5px;">More</span>
+        </div>
+
+        <div style="font-size:12.5px;font-weight:600;color:var(--label);padding:7px 10px 4px;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">matthewmiller2925/vibeca&#8230;</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:8px 10px;border-radius:9px;cursor:pointer;background:var(--active);color:var(--text);">
+          <span style="display:grid;grid-template-columns:repeat(3,3px);gap:2px;flex:none;align-items:center;justify-content:center;width:16px;">
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .1s;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .2s;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .1s;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .2s;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .3s;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .2s;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .3s;"></span>
+            <span style="width:3px;height:3px;border-radius:50%;background:var(--icon);animation:dcpulse 1.2s infinite ease-in-out .4s;"></span>
+          </span>
+          <span style="font-size:14.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Vibe academy SVG logo u&#8230;</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--dot);flex:none;margin:0 3px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Chat name generation pr&#8230;</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:7px;height:7px;border-radius:50%;background:{{ accent }};flex:none;margin:0 2.5px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Vibecademy logo design i&#8230;</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--dot);flex:none;margin:0 3px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Catalog page redesign</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:7px;height:7px;border-radius:50%;background:{{ accent }};flex:none;margin:0 2.5px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">SEO strategy review with &#8230;</span>
+        </div>
+
+        <div style="font-size:12.5px;font-weight:600;color:var(--label);padding:7px 10px 4px;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bridge-mind/bridgebench-ui</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text);" style-hover="background:var(--hover);">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--icon2)" stroke-width="1.7" stroke-linecap="round"><circle cx="6" cy="6" r="2.3"/><circle cx="6" cy="18" r="2.3"/><circle cx="18" cy="7.5" r="2.3"/><path d="M6 8.3 V15.7"/><path d="M17.6 9.7 C17 14 12 13.5 8.3 14.3"/></svg>
+          <span style="font-size:14.5px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Build and deployment</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cloud)" stroke-width="1.6" stroke-linejoin="round"><path d="M6.5 18 A3.6 3.6 0 0 1 6.3 10.9 A5 5 0 0 1 16 9.4 A3.6 3.6 0 0 1 16.6 18 Z"/></svg>
+        </div>
+
+        <div style="font-size:12.5px;font-weight:600;color:var(--label);padding:7px 10px 4px;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bridge-mind/bridgemind-api</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text);" style-hover="background:var(--hover);">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--icon2)" stroke-width="1.7" stroke-linecap="round"><circle cx="6" cy="6" r="2.3"/><circle cx="6" cy="18" r="2.3"/><circle cx="18" cy="7.5" r="2.3"/><path d="M6 8.3 V15.7"/><path d="M17.6 9.7 C17 14 12 13.5 8.3 14.3"/></svg>
+          <span style="font-size:14.5px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Onboarding flow analysis</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cloud)" stroke-width="1.6" stroke-linejoin="round"><path d="M6.5 18 A3.6 3.6 0 0 1 6.3 10.9 A5 5 0 0 1 16 9.4 A3.6 3.6 0 0 1 16.6 18 Z"/></svg>
+        </div>
+
+        <div style="font-size:12.5px;font-weight:600;color:var(--label);padding:7px 10px 4px;margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">bridge-mind/bridgemind-ui</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text);" style-hover="background:var(--hover);">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--icon2)" stroke-width="1.7" stroke-linecap="round"><circle cx="6" cy="6" r="2.3"/><circle cx="6" cy="18" r="2.3"/><circle cx="18" cy="7.5" r="2.3"/><path d="M6 8.3 V15.7"/><path d="M17.6 9.7 C17 14 12 13.5 8.3 14.3"/></svg>
+          <span style="font-size:14.5px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">New Agent</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cloud)" stroke-width="1.6" stroke-linejoin="round"><path d="M6.5 18 A3.6 3.6 0 0 1 6.3 10.9 A5 5 0 0 1 16 9.4 A3.6 3.6 0 0 1 16.6 18 Z"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text);" style-hover="background:var(--hover);">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--icon2)" stroke-width="1.7" stroke-linecap="round"><circle cx="6" cy="6" r="2.3"/><circle cx="6" cy="18" r="2.3"/><circle cx="18" cy="7.5" r="2.3"/><path d="M6 8.3 V15.7"/><path d="M17.6 9.7 C17 14 12 13.5 8.3 14.3"/></svg>
+          <span style="font-size:14.5px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">New bug bounty banner</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cloud)" stroke-width="1.6" stroke-linejoin="round"><path d="M6.5 18 A3.6 3.6 0 0 1 6.3 10.9 A5 5 0 0 1 16 9.4 A3.6 3.6 0 0 1 16.6 18 Z"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--muted3);" style-hover="background:var(--hover);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin:0 -2px;"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+          <span style="font-size:14.5px;">More</span>
+        </div>
+
+        <div style="font-size:12.5px;font-weight:600;color:var(--label);padding:7px 10px 4px;margin-top:12px;">bridgemind</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--dot);flex:none;margin:0 3px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Coupon issue investigation</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--text2);" style-hover="background:var(--hover);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--dot);flex:none;margin:0 3px;"></span>
+          <span style="font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BridgeBench UI deployme&#8230;</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:13px;padding:7px 10px;border-radius:9px;cursor:pointer;color:var(--muted3);" style-hover="background:var(--hover);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin:0 -2px;"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+          <span style="font-size:14.5px;">More</span>
+        </div>
+
+        <div style="font-size:12.5px;font-weight:600;color:var(--label);padding:7px 10px 4px;margin-top:12px;">viewcreator</div>
+      </div>
+
+      <!-- sidebar footer -->
+      <div style="flex:none;display:flex;align-items:center;gap:11px;padding:11px 14px;border-top:1px solid var(--border);">
+        <span style="width:30px;height:30px;border-radius:50%;background:{{ accent }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:none;">M</span>
+        <div style="flex:1;line-height:1.25;min-width:0;">
+          <div style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Matthew Miller</div>
+          <div style="font-size:12.5px;color:var(--label);">Ultra Plan</div>
+        </div>
+        <div style="display:flex;gap:14px;color:var(--muted3);align-items:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="cursor:pointer;"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="17" x2="21" y2="17"/><circle cx="9" cy="7" r="2.6" fill="var(--sidebar)"/><circle cx="15" cy="17" r="2.6" fill="var(--sidebar)"/></svg>
+          <svg onClick="{{ toggleTheme }}" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="cursor:pointer;" style-hover="stroke:var(--text);"><circle cx="12" cy="12" r="8.2"/><path d="M12 3.8 A8.2 8.2 0 0 1 12 20.2 Z" fill="currentColor" stroke="none"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MAIN ===== -->
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);">
+      <div class="scrl" style="flex:1;overflow-y:auto;padding:24px 30px 8px;">
+        <div style="max-width:1180px;">
+
+          <!-- user message card -->
+          <div style="background:var(--card);border:1px solid var(--cardbd);border-radius:14px;padding:13px 15px 14px;">
+            <div style="width:44px;height:42px;border-radius:6px;border:1px solid var(--thumbbd);background:repeating-linear-gradient(135deg,var(--thumb1) 0 6px,var(--thumb2) 6px 12px);position:relative;overflow:hidden;margin-bottom:11px;">
+              <span style="position:absolute;top:3px;left:3px;background:var(--tag);color:var(--tagtx);font-size:7px;font-weight:600;padding:1px 3px;border-radius:3px;letter-spacing:.2px;">VibeCade</span>
+            </div>
+            <p style="margin:0;font-size:14.5px;line-height:1.6;color:var(--text);">
+              <span style="display:inline-flex;align-items:center;gap:5px;background:var(--pillbg);color:var(--pilltx);border-radius:7px;padding:1px 7px 2px;font-size:12.5px;font-weight:500;vertical-align:middle;margin-right:5px;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15 L19 5"/><path d="M13 5 H19 V11"/></svg>
+                LinkComponent &#183; a &#8220;Vibe Cade&#8230;
+              </span>I want you to do an in-depth review of the SVG logo for Vibe Academy here, and I want you to update it. I am not a fan of this SVG logo.
+            </p>
+          </div>
+
+          <!-- assistant turn -->
+          <div style="padding:18px 2px 0;">
+            <p style="margin:0;font-size:15px;line-height:1.6;color:var(--text);">I'll start by reading the Logo component and the streamer-mode skill to protect any sensitive info.</p>
+
+            <div style="margin-top:15px;font-size:14.5px;line-height:1.5;color:var(--text);">Used <span style="color:var(--muted);">streamer-mode</span></div>
+            <div style="margin-top:11px;font-size:14.5px;line-height:1.5;color:var(--text);">Read <span style="color:var(--muted);">Logo.tsx</span> <span style="color:var(--linehi);">L1-195</span></div>
+
+            <p style="margin:15px 0 0;font-size:15px;line-height:1.6;color:var(--text);">Now let me look at the CSS styles that drive the logo appearance, and also look at the screenshot more carefully to understand the current visual.</p>
+
+            <div style="margin-top:15px;font-size:14.5px;line-height:1.5;"><span style="background:linear-gradient(90deg,var(--shine) 0%,var(--shine) 38%,var(--shinehi) 50%,var(--shine) 62%,var(--shine) 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:dcshine 3.2s linear infinite;font-weight:500;">Grepping</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- input bar -->
+      <div style="flex:none;padding:12px 30px 20px;">
+        <div style="display:flex;align-items:center;gap:13px;border:1px solid var(--inputbd);background:var(--inputbg);border-radius:27px;padding:9px 11px 9px 15px;box-shadow:0 1px 2px rgba(0,0,0,.04);max-width:1180px;">
+          <span style="width:30px;height:30px;border-radius:50%;border:1.5px solid var(--plusbd);display:flex;align-items:center;justify-content:center;color:var(--muted3);flex:none;cursor:pointer;" style-hover="background:var(--hover);color:var(--icon);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
+          </span>
+          <input placeholder="Send follow-up" style="flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:14.5px;color:var(--text);padding:4px 0;" />
+          <div style="display:flex;align-items:center;gap:4px;color:var(--muted);cursor:pointer;flex:none;" style-hover="color:var(--icon);">
+            <span style="font-size:13.5px;">Opus 4.6 Max</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9 L12 15 L18 9"/></svg>
+          </div>
+          <span style="width:37px;height:37px;border-radius:50%;background:var(--btnbg);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer;">
+            <span style="width:12px;height:12px;border-radius:3px;background:var(--btnfg);"></span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:840},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2f6bed&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { dark: false };
+  componentDidMount() {
+    try {
+      const v = localStorage.getItem('agentapp-theme');
+      if (v === 'dark') this.setState({ dark: true });
+    } catch (e) {}
+  }
+  renderVals() {
+    return {
+      accent: this.props.accent ?? '#2f6bed',
+      themeAttr: this.state.dark ? 'dark' : 'light',
+      toggleTheme: () => this.setState(s => {
+        const dark = !s.dark;
+        try { localStorage.setItem('agentapp-theme', dark ? 'dark' : 'light'); } catch (e) {}
+        return { dark };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
