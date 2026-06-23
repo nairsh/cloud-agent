@@ -1,0 +1,54 @@
+import { mutationGeneric as mutation, queryGeneric as query } from "convex/server";
+import { v } from "convex/values";
+
+import { ensureUser, requireExistingUser } from "./lib/auth";
+
+export const listModels = query({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const user = await requireExistingUser(ctx);
+    const credentials = await ctx.db
+      .query("providerCredentials")
+      .withIndex("by_user_provider", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    return credentials.flatMap((credential) =>
+      (credential.models ?? []).map((model: string) => ({
+        provider: credential.provider,
+        model,
+        label: `${credential.provider} · ${model}`,
+        credentialId: credential._id,
+      })),
+    );
+  },
+});
+
+export const startLogin = mutation({
+  args: { provider: v.string() },
+  returns: v.object({ credentialId: v.string(), status: v.string() }),
+  handler: async (ctx, args) => {
+    const user = await ensureUser(ctx);
+    const now = Date.now();
+    const credentialId = await ctx.db.insert("providerCredentials", {
+      userId: user._id,
+      provider: args.provider,
+      status: "pending",
+      updatedAt: now,
+    });
+
+    await ctx.db.insert("workerRuns", {
+      userId: user._id,
+      providerCredentialId: credentialId,
+      kind: "provider_login",
+      status: "queued",
+      attempts: 0,
+      cancelRequested: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return { credentialId, status: "queued" };
+  },
+});
