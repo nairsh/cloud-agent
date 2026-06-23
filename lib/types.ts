@@ -68,6 +68,16 @@ export type ModelOption = {
   credentialId: string;
 };
 
+export type ProviderCredentialSummary = {
+  _id: string;
+  provider: string;
+  status: "pending" | "active" | "failed" | "revoked";
+  models?: string[];
+  loginInstructions?: string;
+  error?: string;
+  updatedAt: number;
+};
+
 export type Viewer = {
   userId: string;
   name?: string;

@@ -270,3 +270,34 @@ export const finishProviderLogin = mutation({
     return null;
   },
 });
+
+export const updateProviderLogin = mutation({
+  args: {
+    token: v.string(),
+    runId: v.string(),
+    loginInstructions: v.optional(v.string()),
+    error: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    assertWorkerToken(args.token);
+    const run = await ctx.db.get(args.runId as any);
+    if (!run?.providerCredentialId) {
+      throw new Error("Run does not belong to a provider credential");
+    }
+    const now = Date.now();
+    await ctx.db.patch(run.providerCredentialId, {
+      status: "pending",
+      loginInstructions: args.loginInstructions,
+      error: args.error,
+      updatedAt: now,
+    });
+    await ctx.db.patch(run._id, {
+      status: "running",
+      error: args.error,
+      heartbeatAt: now,
+      updatedAt: now,
+    });
+    return null;
+  },
+});

@@ -3,6 +3,7 @@ import { makeFunctionReference } from "convex/server";
 import type {
   AgentSessionSummary,
   ModelOption,
+  ProviderCredentialSummary,
   RepositoryOption,
   TimelineResult,
   Viewer,
@@ -48,6 +49,11 @@ export const convexApi = {
       Record<string, never>,
       ModelOption[]
     >("providers:listModels"),
+    listCredentials: makeFunctionReference<
+      "query",
+      Record<string, never>,
+      ProviderCredentialSummary[]
+    >("providers:listCredentials"),
     startLogin: makeFunctionReference<
       "mutation",
       { provider: string },
@@ -130,5 +136,15 @@ export const convexApi = {
       },
       null
     >("worker:finishProviderLogin"),
+    updateProviderLogin: makeFunctionReference<
+      "mutation",
+      {
+        token: string;
+        runId: string;
+        loginInstructions?: string;
+        error?: string;
+      },
+      null
+    >("worker:updateProviderLogin"),
   },
 };

@@ -26,6 +26,31 @@ export const listModels = query({
   },
 });
 
+export const listCredentials = query({
+  args: {},
+  returns: v.any(),
+  handler: async (ctx) => {
+    const user = await getUserByIdentity(ctx);
+    if (!user || user.deletedAt) return [];
+    const credentials = await ctx.db
+      .query("providerCredentials")
+      .withIndex("by_user_provider", (q) => q.eq("userId", user._id))
+      .collect();
+
+    return credentials
+      .sort((left, right) => right.updatedAt - left.updatedAt)
+      .map((credential) => ({
+        _id: credential._id,
+        provider: credential.provider,
+        status: credential.status,
+        models: credential.models,
+        loginInstructions: credential.loginInstructions,
+        error: credential.error,
+        updatedAt: credential.updatedAt,
+      }));
+  },
+});
+
 export const startLogin = mutation({
   args: { provider: v.string() },
   returns: v.object({ credentialId: v.string(), status: v.string() }),

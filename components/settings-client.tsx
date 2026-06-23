@@ -35,8 +35,9 @@ function SettingsData({ setupIssues }: { setupIssues: string[] }) {
   const viewer = useQuery(convexApi.viewer.get);
   const sessions = useQuery(convexApi.sessions.list);
   const models = useQuery(convexApi.providers.listModels);
+  const credentials = useQuery(convexApi.providers.listCredentials);
   const startLogin = useMutation(convexApi.providers.startLogin);
-  const [provider, setProvider] = useState("codex");
+  const [provider, setProvider] = useState("openai-codex");
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
   const { githubAppSlug } = useRuntimeConfig();
 
@@ -99,8 +100,8 @@ function SettingsData({ setupIssues }: { setupIssues: string[] }) {
                 value={provider}
                 onChange={(event) => setProvider(event.target.value)}
               >
-                <option value="codex">Codex / ChatGPT</option>
-                <option value="claude">Claude</option>
+                <option value="openai-codex">Codex / ChatGPT</option>
+                <option value="anthropic">Claude</option>
                 <option value="github-copilot">GitHub Copilot</option>
               </select>
             </div>
@@ -110,6 +111,43 @@ function SettingsData({ setupIssues }: { setupIssues: string[] }) {
             </button>
           </div>
           {loginStatus ? <p>{loginStatus}</p> : null}
+          {credentials === undefined ? (
+            <p>
+              <Loader2 size={14} /> Loading credential status
+            </p>
+          ) : credentials.length > 0 ? (
+            <div style={{ display: "grid", gap: 8 }}>
+              {credentials.map((credential) => (
+                <div
+                  key={credential._id}
+                  style={{
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    display: "grid",
+                    gap: 6,
+                  }}
+                >
+                  <strong>
+                    {credential.provider} · {credential.status}
+                  </strong>
+                  {credential.loginInstructions ? (
+                    <pre
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        margin: 0,
+                        font: "inherit",
+                        color: "var(--muted)",
+                      }}
+                    >
+                      {credential.loginInstructions}
+                    </pre>
+                  ) : null}
+                  {credential.error ? <p style={{ color: "var(--danger)" }}>{credential.error}</p> : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
           {models === undefined ? (
             <p>
               <Loader2 size={14} /> Loading models
