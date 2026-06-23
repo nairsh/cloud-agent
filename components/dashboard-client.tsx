@@ -107,10 +107,12 @@ function NewSessionPanel({
 }) {
   const createSession = useMutation(convexApi.sessions.create);
   const [repositoryId, setRepositoryId] = useState("");
-  const [credentialId, setCredentialId] = useState("");
+  const [modelKey, setModelKey] = useState("");
   const [prompt, setPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const selectedModel = models?.find((model) => model.credentialId === credentialId);
+  const selectedModel = models?.find(
+    (model) => `${model.credentialId}:${model.model}` === modelKey,
+  );
 
   const canSubmit = Boolean(repositoryId && selectedModel && prompt.trim() && !submitting);
 
@@ -121,7 +123,7 @@ function NewSessionPanel({
     try {
       await createSession({
         repositoryId,
-        credentialId,
+        credentialId: selectedModel.credentialId,
         provider: selectedModel.provider,
         model: selectedModel.model,
         prompt: prompt.trim(),
@@ -190,12 +192,15 @@ function NewSessionPanel({
                 <label htmlFor="model">Model</label>
                 <select
                   id="model"
-                  value={credentialId}
-                  onChange={(event) => setCredentialId(event.target.value)}
+                  value={modelKey}
+                  onChange={(event) => setModelKey(event.target.value)}
                 >
                   <option value="">Select model</option>
                   {models.map((model) => (
-                    <option key={`${model.credentialId}:${model.model}`} value={model.credentialId}>
+                    <option
+                      key={`${model.credentialId}:${model.model}`}
+                      value={`${model.credentialId}:${model.model}`}
+                    >
                       {model.label}
                     </option>
                   ))}
