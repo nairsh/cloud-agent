@@ -99,10 +99,11 @@ async function streamPiEvent(
   event: NormalizedPiEvent,
 ) {
   if (event.kind === "tool") {
+    const { kind: _kind, ...toolCall } = event;
     await convex.mutation(convexApi.worker.upsertToolCall, {
       token,
       runId,
-      toolCall: event,
+      toolCall,
     });
     return;
   }
