@@ -28,12 +28,10 @@ export function AppFrame({
   selectedSessionId?: string;
   children: ReactNode;
 }) {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem("cloud-agent-theme") === "dark",
+  );
   const { clerkConfigured } = useRuntimeConfig();
-
-  useEffect(() => {
-    setDark(localStorage.getItem("cloud-agent-theme") === "dark");
-  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
