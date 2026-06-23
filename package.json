@@ -1,0 +1,43 @@
+{
+  "name": "cloud-agent",
+  "version": "1.0.0",
+  "description": "Cloud agent handoff app built with Next.js, Clerk, Convex, GitHub Apps, and Pi SDK runners.",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "worker": "tsx worker/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "type": "module",
+  "dependencies": {
+    "@clerk/nextjs": "^7.5.7",
+    "@earendil-works/pi-coding-agent": "^0.79.10",
+    "@octokit/app": "^16.1.2",
+    "@octokit/rest": "^22.0.1",
+    "convex": "^1.41.0",
+    "lucide-react": "^1.21.0",
+    "next": "^16.2.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "svix": "^1.96.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.9",
+    "jsdom": "^29.1.1",
+    "playwright": "^1.61.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}
