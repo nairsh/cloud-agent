@@ -14,6 +14,7 @@ import { runPiTask, type NormalizedPiEvent } from "@/worker/pi";
 import type { ClaimedRun } from "@/worker/types";
 
 const exec = promisify(execFile);
+const MANUAL_PROVIDER_LOGIN_TIMEOUT_MS = 10 * 60 * 1000;
 
 async function main() {
   const claim = parseClaim();
@@ -115,6 +116,7 @@ async function streamPiEvent(
       {
         role: event.role,
         type: event.type,
+        streamOrder: event.streamOrder,
         text: event.text,
         payload: event.payload,
       },
@@ -129,11 +131,23 @@ async function runProviderLogin(
 ) {
   const workspace = await mkdtemp(path.join(tmpdir(), "cloud-agent-auth-"));
   const authPath = path.join(workspace, "auth.json");
+  let latestLoginInstructions: string[] = [];
+  async function publish(lines: Array<string | undefined>) {
+    latestLoginInstructions = lines.filter(Boolean) as string[];
+    await publishProviderLoginProgress(convex, token, claim.runId, latestLoginInstructions);
+  }
+  async function appendAndPublish(lines: Array<string | undefined>) {
+    latestLoginInstructions = [
+      ...latestLoginInstructions,
+      ...(lines.filter(Boolean) as string[]),
+    ];
+    await publishProviderLoginProgress(convex, token, claim.runId, latestLoginInstructions);
+  }
   try {
     const authStorage = AuthStorage.create(authPath);
     await authStorage.login(claim.provider, {
       onAuth: (info: { url: string; instructions?: string }) => {
-        void publishProviderLoginProgress(convex, token, claim.runId, [
+        void publish([
           "Open the provider authorization URL to continue.",
           info.url,
           info.instructions,
@@ -144,7 +158,7 @@ async function runProviderLogin(
         userCode: string;
         expiresInSeconds?: number;
       }) => {
-        void publishProviderLoginProgress(convex, token, claim.runId, [
+        void publish([
           "Open the provider device-login page and enter the code.",
           `URL: ${info.verificationUri}`,
           `Code: ${info.userCode}`,
@@ -155,20 +169,21 @@ async function runProviderLogin(
       },
       onPrompt: async (prompt: { message: string; allowEmpty?: boolean }) => {
         if (prompt.allowEmpty || /domain|enterprise/i.test(prompt.message)) return "";
-        await publishProviderLoginProgress(convex, token, claim.runId, [
+        await publish([
           prompt.message,
           "This provider requires a manual value. Retry with a device-code provider or extend the settings UI to submit this value.",
         ]);
         throw new Error(`Provider login requires manual input: ${prompt.message}`);
       },
       onManualCodeInput: async () => {
-        await publishProviderLoginProgress(convex, token, claim.runId, [
+        await appendAndPublish([
           "Waiting for browser callback or provider device-code completion.",
+          "This login will fail automatically if it does not complete within 10 minutes.",
         ]);
-        return new Promise<string>(() => {});
+        return waitForManualProviderLogin();
       },
       onProgress: (message: string) => {
-        void publishProviderLoginProgress(convex, token, claim.runId, [message]);
+        void publish([message]);
       },
       onSelect: async (prompt: { options: Array<{ id: string }> }) => {
         return (
@@ -201,6 +216,14 @@ async function runProviderLogin(
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }
+}
+
+function waitForManualProviderLogin(): Promise<string> {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error("Provider login timed out waiting for browser callback or manual code."));
+    }, MANUAL_PROVIDER_LOGIN_TIMEOUT_MS);
+  });
 }
 
 async function publishProviderLoginProgress(

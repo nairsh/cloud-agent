@@ -134,15 +134,24 @@ export const syncInstallationForCurrentUser = mutation({
 
 export const syncInstallation = internalMutation({
   args: {
-    externalUserId: v.string(),
+    externalUserId: v.optional(v.string()),
     ...installationArgs,
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("byExternalId", (q) => q.eq("externalId", args.externalUserId))
-      .unique();
+    let user = args.externalUserId
+      ? await ctx.db
+          .query("users")
+          .withIndex("byExternalId", (q) => q.eq("externalId", args.externalUserId!))
+          .unique()
+      : null;
+    if (!user) {
+      const existingInstallation = await ctx.db
+        .query("githubInstallations")
+        .withIndex("by_installation", (q) => q.eq("installationId", args.installationId))
+        .first();
+      user = existingInstallation ? await ctx.db.get(existingInstallation.userId) : null;
+    }
     if (!user) return null;
 
     await syncInstallationForUser(ctx, user, args);

@@ -1,12 +1,6 @@
 import type { AuthConfig } from "convex/server";
 
-const clerkIssuerEnvName = ["CLERK", "JWT", "ISSUER", "DOMAIN"].join("_");
-const clerkIssuerDomain = Object.prototype.hasOwnProperty.call(
-  process.env,
-  clerkIssuerEnvName,
-)
-  ? process.env[clerkIssuerEnvName]
-  : undefined;
+const clerkIssuerDomain = process.env.CLERK_JWT_ISSUER_DOMAIN;
 
 const providers = clerkIssuerDomain
   ? [

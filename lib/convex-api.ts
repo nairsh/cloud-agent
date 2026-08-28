@@ -79,6 +79,7 @@ export const convexApi = {
         provider: string;
         model: string;
         prompt: string;
+        title?: string;
       },
       { sessionId: string }
     >("sessions:create"),

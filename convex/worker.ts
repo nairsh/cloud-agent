@@ -6,6 +6,25 @@ function assertWorkerToken(token: string) {
   if (!expected || token !== expected) throw new Error("Unauthorized worker");
 }
 
+export function promptForClaim(sessionPrompt: string, latestUserEvent?: { text?: string } | null) {
+  return latestUserEvent?.text ?? sessionPrompt;
+}
+
+export function runWasCancelled(run: { status?: string; cancelRequested?: boolean }) {
+  return run.status === "cancel_requested" || run.status === "cancelled" || run.cancelRequested;
+}
+
+export function sessionStatusForFinishedRun(
+  workerStatus: "completed" | "failed" | "cancelled",
+  run: { status?: string; cancelRequested?: boolean },
+  session?: { status?: string } | null,
+) {
+  if (workerStatus === "cancelled" || runWasCancelled(run) || session?.status === "cancel_requested") {
+    return "cancelled";
+  }
+  return workerStatus === "completed" ? "completed" : "failed";
+}
+
 async function nextSequence(ctx: any, sessionId: string) {
   const last = await ctx.db
     .query("sessionEvents")
@@ -42,6 +61,15 @@ export const claimNextRun = mutation({
         ? await ctx.db.get(run.providerCredentialId)
         : null;
       if (!credential) throw new Error("Provider credential missing");
+      if (credential.status !== "pending") {
+        await ctx.db.patch(run._id, {
+          status: "failed",
+          error: "Provider login was replaced before the worker claimed it.",
+          heartbeatAt: now,
+          updatedAt: now,
+        });
+        return null;
+      }
       return {
         runId: run._id,
         kind: run.kind,
@@ -55,6 +83,12 @@ export const claimNextRun = mutation({
     const repo = await ctx.db.get(session.repositoryId);
     const credential = await ctx.db.get(session.providerCredentialId);
     if (!repo || !credential) throw new Error("Session dependencies missing");
+    const latestUserEvent = await ctx.db
+      .query("sessionEvents")
+      .withIndex("by_session_sequence", (q: any) => q.eq("sessionId", session._id))
+      .filter((q) => q.eq(q.field("role"), "user"))
+      .order("desc")
+      .first();
 
     await ctx.db.patch(session._id, { status: "running", updatedAt: now });
 
@@ -63,7 +97,7 @@ export const claimNextRun = mutation({
       kind: run.kind,
       session: {
         id: session._id,
-        prompt: session.prompt,
+        prompt: promptForClaim(session.prompt, latestUserEvent),
         model: session.model,
         provider: session.provider,
       },
@@ -97,6 +131,7 @@ export const appendEvents = mutation({
           v.literal("tool"),
         ),
         type: v.string(),
+        streamOrder: v.optional(v.number()),
         text: v.optional(v.string()),
         payload: v.optional(v.any()),
       }),
@@ -118,6 +153,7 @@ export const appendEvents = mutation({
         sessionId: session._id,
         workerRunId: run._id,
         sequence,
+        streamOrder: event.streamOrder,
         role: event.role,
         type: event.type,
         text: event.text,
@@ -138,6 +174,7 @@ export const upsertToolCall = mutation({
     runId: v.string(),
     toolCall: v.object({
       providerCallId: v.optional(v.string()),
+      streamOrder: v.optional(v.number()),
       toolName: v.string(),
       status: v.string(),
       args: v.optional(v.any()),
@@ -169,6 +206,7 @@ export const upsertToolCall = mutation({
       sessionId: session._id,
       workerRunId: run._id,
       providerCallId: args.toolCall.providerCallId,
+      streamOrder: existing?.streamOrder ?? args.toolCall.streamOrder,
       toolName: args.toolCall.toolName,
       status: args.toolCall.status,
       args: args.toolCall.args,
@@ -202,22 +240,19 @@ export const finishRun = mutation({
     if (!run) throw new Error("Run not found");
     const now = Date.now();
 
+    const session = run.sessionId ? await ctx.db.get(run.sessionId) : null;
+    const finalStatus = sessionStatusForFinishedRun(args.status, run, session);
+
     await ctx.db.patch(run._id, {
-      status: args.status,
+      status: finalStatus === "cancelled" ? "cancelled" : args.status,
       error: args.error,
       heartbeatAt: now,
       updatedAt: now,
     });
 
     if (run.sessionId) {
-      const sessionStatus =
-        args.status === "completed"
-          ? "completed"
-          : args.status === "cancelled"
-            ? "cancelled"
-            : "failed";
       await ctx.db.patch(run.sessionId, {
-        status: sessionStatus,
+        status: finalStatus,
         error: args.error,
         branchName: args.branchName,
         pullRequestUrl: args.pullRequestUrl,

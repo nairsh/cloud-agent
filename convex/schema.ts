@@ -101,6 +101,7 @@ export default defineSchema({
     sessionId: v.id("agentSessions"),
     workerRunId: v.optional(v.id("workerRuns")),
     sequence: v.number(),
+    streamOrder: v.optional(v.number()),
     role: v.union(
       v.literal("user"),
       v.literal("assistant"),
@@ -120,6 +121,7 @@ export default defineSchema({
     sessionId: v.id("agentSessions"),
     workerRunId: v.optional(v.id("workerRuns")),
     providerCallId: v.optional(v.string()),
+    streamOrder: v.optional(v.number()),
     toolName: v.string(),
     status: v.string(),
     args: v.optional(v.any()),
@@ -143,6 +145,7 @@ export default defineSchema({
       v.literal("claimed"),
       v.literal("running"),
       v.literal("cancel_requested"),
+      v.literal("cancelled"),
       v.literal("failed"),
       v.literal("completed"),
     ),

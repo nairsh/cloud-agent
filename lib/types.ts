@@ -12,6 +12,7 @@ export type WorkerRunStatus =
   | "claimed"
   | "running"
   | "cancel_requested"
+  | "cancelled"
   | "failed"
   | "completed";
 
@@ -21,6 +22,7 @@ export type SessionEvent = {
   _id: string;
   sessionId: string;
   sequence: number;
+  streamOrder?: number;
   role: EventRole;
   type: string;
   text?: string;
@@ -75,6 +77,7 @@ export type ProviderCredentialSummary = {
   models?: string[];
   loginInstructions?: string;
   error?: string;
+  pendingForMs?: number;
   updatedAt: number;
 };
 
@@ -92,6 +95,7 @@ export type TimelineResult = {
   events: SessionEvent[];
   toolCalls: Array<{
     _id: string;
+    streamOrder?: number;
     toolName: string;
     status: string;
     args?: unknown;
@@ -99,5 +103,6 @@ export type TimelineResult = {
     error?: string;
     startedAt?: number;
     finishedAt?: number;
+    updatedAt: number;
   }>;
 };

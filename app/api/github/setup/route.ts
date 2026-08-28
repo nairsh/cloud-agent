@@ -1,11 +1,11 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { ConvexHttpClient } from "convex/browser";
-import { Octokit } from "@octokit/rest";
-import { createAppAuth } from "@octokit/auth-app";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
 import { convexApi } from "@/lib/convex-api";
+import { loadInstallation } from "@/lib/github-installation";
 
 export async function GET(request: NextRequest) {
   const authState = await auth();
@@ -31,7 +31,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  await assertUserCanAccessInstallation(userId, installationId);
+  const state = request.nextUrl.searchParams.get("state");
+  const verifiedState = state ? verifyState(state) : null;
+  const allowLocalRecovery = !state && process.env.NODE_ENV !== "production";
+  if (!allowLocalRecovery && verifiedState?.userId !== userId) {
+    return NextResponse.json(
+      { error: "Start GitHub installation from this app before returning to setup." },
+      { status: 403 },
+    );
+  }
+
   const installation = await loadInstallation(installationId);
   const convex = new ConvexHttpClient(convexUrl, { auth: convexToken });
   await convex.mutation(convexApi.github.syncInstallationForCurrentUser, installation);
@@ -39,65 +48,28 @@ export async function GET(request: NextRequest) {
   redirect("/app/settings");
 }
 
-async function assertUserCanAccessInstallation(userId: string, installationId: number) {
-  const client = await clerkClient();
-  const tokenResponse = await client.users.getUserOauthAccessToken(userId, "github");
-  const token = tokenResponse.data[0]?.token;
-  if (!token) {
-    throw new Response("GitHub OAuth token is required to verify installation ownership", {
-      status: 403,
-    });
+function verifyState(state: string) {
+  const secret = process.env.GITHUB_WEBHOOK_SECRET ?? process.env.CLERK_SECRET_KEY;
+  if (!secret) {
+    throw new Response("GITHUB_WEBHOOK_SECRET or CLERK_SECRET_KEY is required", { status: 500 });
   }
+  const [body, signature] = state.split(".");
+  if (!body || !signature) return null;
 
-  const octokit = new Octokit({ auth: token });
-  const installations = await octokit.paginate("GET /user/installations", {
-    per_page: 100,
-  });
-  if (!installations.some((installation: any) => installation.id === installationId)) {
-    throw new Response("Installation is not accessible to this user", { status: 403 });
-  }
+  const expected = createHmac("sha256", secret).update(body).digest("base64url");
+  if (!safeEqual(signature, expected)) return null;
+
+  const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as {
+    userId?: string;
+    issuedAt?: number;
+  };
+  if (!payload.userId || !payload.issuedAt) return null;
+  if (Date.now() - payload.issuedAt > 30 * 60 * 1000) return null;
+  return payload;
 }
 
-async function loadInstallation(installationId: number) {
-  const appId = process.env.GITHUB_APP_ID;
-  const privateKey = process.env.GITHUB_APP_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  const clientId = process.env.GITHUB_APP_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
-
-  if (!appId || !privateKey || !clientId || !clientSecret) {
-    throw new Response("GitHub App credentials are not configured", { status: 500 });
-  }
-
-  const auth = createAppAuth({
-    appId,
-    privateKey,
-    clientId,
-    clientSecret,
-  });
-  const installationAuth = await auth({ type: "installation", installationId });
-  const octokit = new Octokit({ auth: installationAuth.token });
-  const installation = await octokit.request("GET /app/installations/{installation_id}", {
-    installation_id: installationId,
-  });
-  const repos = await octokit.paginate("GET /installation/repositories", {
-    per_page: 100,
-  });
-
-  return {
-    installationId,
-    accountId: (installation.data.account as any)?.id,
-    accountLogin: (installation.data.account as any)?.login,
-    targetType: installation.data.target_type,
-    permissions: installation.data.permissions,
-    repositorySelection: installation.data.repository_selection,
-    repositories: repos.map((repo: any) => ({
-      id: repo.id,
-      owner: repo.owner.login,
-      name: repo.name,
-      fullName: repo.full_name,
-      private: repo.private,
-      defaultBranch: repo.default_branch,
-      permissions: repo.permissions,
-    })),
-  };
+function safeEqual(left: string, right: string) {
+  const leftBytes = Buffer.from(left);
+  const rightBytes = Buffer.from(right);
+  return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
 }

@@ -6,6 +6,7 @@ const eslintConfig = [
     ignores: [
       "node_modules/**",
       ".next/**",
+      ".claude/**",
       "coverage/**",
       "convex/_generated/**",
       "legacy/**"

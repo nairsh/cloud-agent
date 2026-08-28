@@ -14,7 +14,7 @@ const deleteUser = internalMutationRef<{ externalId: string }, null>(
 );
 const syncInstallation = internalMutationRef<
   {
-    externalUserId: string;
+    externalUserId?: string;
     installationId: number;
     accountId: number;
     accountLogin: string;
@@ -85,7 +85,6 @@ http.route({
     if (eventName === "installation" || eventName === "installation_repositories") {
       const externalUserId =
         payload.sender?.node_id ?? payload.sender?.id?.toString() ?? undefined;
-      if (!externalUserId) return new Response("No sender id", { status: 202 });
       const repositories = (
         payload.repositories ??
         payload.repositories_added ??

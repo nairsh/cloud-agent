@@ -9,6 +9,10 @@ function titleFromPrompt(prompt: string) {
   return compact.length > 72 ? `${compact.slice(0, 69)}...` : compact;
 }
 
+export function blocksFollowup(status: string) {
+  return status === "queued" || status === "running" || status === "cancel_requested";
+}
+
 async function repositoryView(ctx: any, repositoryId: string) {
   const repo = await ctx.db.get(repositoryId);
   if (!repo) return null;
@@ -85,6 +89,7 @@ export const getTimeline = query({
         sequence: event.sequence,
         role: event.role,
         type: event.type,
+        streamOrder: event.streamOrder,
         text: event.text,
         payload: event.payload,
         createdAt: event.createdAt,
@@ -101,6 +106,7 @@ export const create = mutation({
     provider: v.string(),
     model: v.string(),
     prompt: v.string(),
+    title: v.optional(v.string()),
   },
   returns: v.object({ sessionId: v.string() }),
   handler: async (ctx, args) => {
@@ -121,7 +127,7 @@ export const create = mutation({
       providerCredentialId: credential._id,
       provider: args.provider,
       model: args.model,
-      title: titleFromPrompt(args.prompt),
+      title: titleFromPrompt(args.title ?? args.prompt),
       prompt: args.prompt,
       status: "queued",
       createdAt: now,
@@ -160,6 +166,9 @@ export const sendFollowup = mutation({
     const user = await requireExistingUser(ctx);
     const session = await ctx.db.get(args.sessionId as any);
     assertOwns(session, user._id);
+    if (blocksFollowup(session.status)) {
+      throw new Error("Wait for the current run to finish before sending a follow-up.");
+    }
     const last = await ctx.db
       .query("sessionEvents")
       .withIndex("by_session_sequence", (q) => q.eq("sessionId", session._id))
@@ -199,10 +208,6 @@ export const cancel = mutation({
     const session = await ctx.db.get(args.sessionId as any);
     assertOwns(session, user._id);
     const now = Date.now();
-    await ctx.db.patch(session._id, {
-      status: "cancel_requested",
-      updatedAt: now,
-    });
     const runs = await ctx.db
       .query("workerRuns")
       .withIndex("by_session", (q) => q.eq("sessionId", session._id))
@@ -214,9 +219,14 @@ export const cancel = mutation({
         ),
       )
       .collect();
+    const hasRunningRun = runs.some((run) => run.status === "claimed" || run.status === "running");
+    await ctx.db.patch(session._id, {
+      status: hasRunningRun ? "cancel_requested" : "cancelled",
+      updatedAt: now,
+    });
     for (const run of runs) {
       await ctx.db.patch(run._id, {
-        status: "cancel_requested",
+        status: run.status === "queued" ? "cancelled" : "cancel_requested",
         cancelRequested: true,
         updatedAt: now,
       });

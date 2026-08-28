@@ -7,9 +7,17 @@ import {
 import { redactSecrets } from "@/lib/redaction";
 
 export type NormalizedPiEvent =
-  | { kind: "event"; role: "assistant" | "system" | "tool"; type: string; text?: string; payload?: unknown }
+  | {
+      kind: "event";
+      role: "assistant" | "system" | "tool";
+      type: string;
+      streamOrder?: number;
+      text?: string;
+      payload?: unknown;
+    }
   | {
       kind: "tool";
+      streamOrder?: number;
       providerCallId?: string;
       toolName: string;
       status: string;
@@ -48,16 +56,20 @@ export async function runPiTask({
     model,
   });
 
+  let streamOrder = 0;
+  let streamWrites = Promise.resolve();
   const unsubscribe = session.subscribe((event: unknown) => {
     const normalized = normalizePiEvent(event);
     if (!normalized) return;
-    void onEvent(normalized);
+    streamOrder += 1;
+    streamWrites = streamWrites.then(() => onEvent({ ...normalized, streamOrder }));
   });
 
   try {
     await session.prompt(prompt);
   } finally {
     unsubscribe();
+    await streamWrites;
   }
 }
 

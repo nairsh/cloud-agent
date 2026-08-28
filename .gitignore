@@ -10,3 +10,7 @@ coverage/
 *.log
 *.tsbuildinfo
 convex/_generated/
+
+# Local agent sessions and captured UI images
+.claude/
+.codex-screens/
