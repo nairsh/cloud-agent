@@ -1,6 +1,9 @@
-# Cloud Agent Handoff
+# cloud-agent
 
 Next.js + Clerk + Convex control plane for running Pi SDK coding tasks in isolated Docker workers.
+
+Experimental, and built for a single operator — there is no tenancy model beyond
+Clerk's per-user scoping.
 
 ## Local Setup
 
